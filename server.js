@@ -14,6 +14,10 @@ const port = process.env.PORT || 4242;
 const successUrl = process.env.SUCCESS_URL || "http://localhost:4242/success.html";
 const cancelUrl = process.env.CANCEL_URL || "http://localhost:4242/cancel.html";
 
+app.get("/", (req, res) => {
+    res.send("Welcome to store server!");
+  });
+
 app.post("/checkout", async (req, res, next) => {
     try {
         const session = await stripe.checkout.sessions.create({
