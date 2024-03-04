@@ -4,12 +4,19 @@ const bodyparser = require("body-parser");
 require('dotenv').config();
 
 const app = express();
+// se sirven archivos estaticos desde la carpeta public
 app.use(express.static("public"));
+
+// analizar las solicitudes entrantes en formato JSON y urlencoded
 app.use(bodyparser.urlencoded({extended: false}));
 app.use(bodyparser.json());
+
+// permite solicitudes de cualquier origen, tambien el intercambio de credenciales(cookies y encabezados)
 app.use(cors({origin: true, credentials: true}));
 
+// importa el modulo stripe y se inicializa con la clave privada
 const stripe = require("stripe")("sk_test_51OqJ2dFqCl4i3LlWC4vZ1H5IoeGh16CXXXyNJIsFHCe5S4g5mEM0xvNxy0wbUGTp3FvwpZdFyMmOduRRJDWI5YrL00N4RAtCUr");
+
 const port = process.env.PORT || 4242;
 const successUrl = process.env.SUCCESS_URL || "http://localhost:4242/success.html";
 const cancelUrl = process.env.CANCEL_URL || "http://localhost:4242/cancel.html";
@@ -20,6 +27,7 @@ app.get("/", (req, res) => {
 
 app.post("/checkout", async (req, res, next) => {
     try {
+        // crear una sesion de pago en stripe
         const session = await stripe.checkout.sessions.create({
 
             // inicio envios gratis
@@ -73,6 +81,7 @@ app.post("/checkout", async (req, res, next) => {
             ],
             // fin envios gratis
 
+            // se entrega productos del carrito
             line_items: req.body.items.map((item) => ({
                 price_data: {
                   currency: 'usd',
@@ -89,6 +98,7 @@ app.post("/checkout", async (req, res, next) => {
             cancel_url: cancelUrl
         });
 
+        // la sesión creada se devuelve al cliente
         res.status(200).json(session);
         
     } catch (error) {
